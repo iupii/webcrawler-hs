@@ -1,17 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Crawler where
-
-import Text.HTML.Scalpel
-
+module Crawler
+    ( env
+    , crawl
+    , scrapeFetchLinks
+    )
+where
 
 import Control.Monad.Reader ( ReaderT )
 import Data.IORef
-import Data.Maybe ( fromJust, fromMaybe )
+import Data.Maybe ( fromJust )
 import Data.Text ( Text )
 import qualified Data.Set as S
 
-import URI
+import Utils
 
 data AppState = AppState
     { links :: S.Set Text
@@ -46,4 +48,4 @@ env u l f = do
 crawl :: App ()
 crawl = undefined
 
-scrapeFetchLinks url = fromMaybe [] <$> scrapeURL url (attrs "href" "a")
+

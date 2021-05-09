@@ -32,7 +32,9 @@ library
   import: shared-properties
   exposed-modules:
       Crawler
-      URI
+      Utils
+      Utils.URI
+      Utils.Scalpel
   other-modules:
       Paths_webcrawler_hs
   hs-source-dirs:
