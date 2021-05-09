@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "webcrawler-hs:lib"
+
+    - path: "./app/Main.hs"
+      component: "webcrawler-hs:exe:webcrawler-hs-exe"
+
+    - path: "./app/Paths_webcrawler_hs.hs"
+      component: "webcrawler-hs:exe:webcrawler-hs-exe"
+
+    - path: "./test"
+      component: "webcrawler-hs:test:webcrawler-hs-test"
