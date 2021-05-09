@@ -15,26 +15,31 @@ source-repository head
   type: git
   location: https://github.com/iupii/webcrawler-hs
 
-library
-  exposed-modules:
-      Crawler
-      Url
-  other-modules:
-      Paths_webcrawler_hs
-  hs-source-dirs:
-      src
+common shared-properties
+  default-language: Haskell2010
   build-depends:
       base >=4.7 && <5
     , containers
     , lens
     , modern-uri
     , mtl
-    , optparse-applicative
     , scalpel
     , text
-  default-language: Haskell2010
+  ghc-options:
+    -Wall
+
+library
+  import: shared-properties
+  exposed-modules:
+      Crawler
+      URI
+  other-modules:
+      Paths_webcrawler_hs
+  hs-source-dirs:
+      src
 
 executable webcrawler-hs-exe
+  import: shared-properties
   main-is: Main.hs
   other-modules:
       Paths_webcrawler_hs
@@ -42,15 +47,11 @@ executable webcrawler-hs-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
-    , modern-uri
-    , mtl
+      webcrawler-hs
     , optparse-applicative
-    , scalpel
-    , webcrawler-hs
-  default-language: Haskell2010
 
 test-suite webcrawler-hs-test
+  import: shared-properties
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -59,10 +60,4 @@ test-suite webcrawler-hs-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
-    , modern-uri
-    , mtl
-    , optparse-applicative
-    , scalpel
-    , webcrawler-hs
-  default-language: Haskell2010
+      webcrawler-hs

@@ -3,39 +3,41 @@
 module Crawler where
 
 import Text.HTML.Scalpel
-import Text.URI
+
 
 import Control.Monad.Reader ( ReaderT )
 import Data.IORef
-import Data.Maybe ( fromMaybe )
+import Data.Maybe ( fromJust, fromMaybe )
+import Data.Text ( Text )
 import qualified Data.Set as S
 
+import URI
 
 data AppState = AppState
-    { links :: S.Set String
+    { links :: S.Set Text
     , pending :: Int
     }
 
 data AppConfig = AppConfig
-    { baseUrl :: String
+    { uriBase :: URIBase
     , workers :: Int
     }
 
 data Env = Env
     { state :: IORef AppState
     , config :: AppConfig
-    , fetchLinks :: String -> IO [String]
+    , fetchLinks :: String -> IO [Text]
     }
 
 type App = ReaderT Env IO
 
-env :: String -> Int -> (String -> IO [String]) -> IO Env
+env :: Text -> Int -> (String -> IO [Text]) -> IO Env
 env u l f = do
     s <- newIORef AppState { links = S.singleton u, pending = 1 }
     return Env
         { state = s
         , config = AppConfig
-            { baseUrl = u
+            { uriBase = fromJust $ mkURIBase u
             , workers = l
             }
         , fetchLinks = f

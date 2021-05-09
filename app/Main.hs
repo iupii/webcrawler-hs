@@ -3,14 +3,14 @@
 module Main where
 
 import Options.Applicative
-import Data.Semigroup ((<>))
+import Data.Text ( Text )
 
-import Control.Monad.Reader (runReaderT)
+import Control.Monad.Reader ( runReaderT )
 
 import Crawler
 
 data Opts = Opts
-    { url :: String
+    { url :: Text
     , limit :: Int
     } deriving (Show)
 
