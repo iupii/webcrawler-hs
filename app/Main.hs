@@ -2,13 +2,14 @@
 
 module Main where
 
+import Control.Monad.Reader ( runReaderT )
+
 import Options.Applicative
 import Data.Text ( Text )
 
-import Control.Monad.Reader ( runReaderT )
+import App ( app, env )
+import Utils ( scrapeFetchLinks )
 
-import App
-import Utils
 
 data Opts = Opts
     { url :: Text

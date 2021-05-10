@@ -1,4 +1,8 @@
-module App where
+module App
+    ( app
+    , env
+    )
+where
 
 import Control.Lens
 import qualified Data.Set as S

@@ -1,6 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Crawler where
+module Crawler
+    ( crawl
+    )
+where
 
 import Control.Lens
 import qualified Data.Set as S
@@ -20,9 +23,11 @@ crawl = do
     toWorkers <- liftIO newEmptyMVar
     fromWorkers <- liftIO newEmptyMVar
 
+    -- workers
     liftIO $ replicateM_ (env ^. config . workers) $ forkIO $ forever $ do
         takeMVar toWorkers >>= getLinks env >>= putMVar fromWorkers
 
+    -- init links
     liftIO $ do
         state' <- readIORef (env ^. state)
         forM_ (state' ^. links) (putMVar toWorkers)
@@ -39,13 +44,14 @@ loop toWorkers fromWorkers = do
         state' <- readIORef (env ^. state)
         let links' = state' ^. links
         newLinks <- filter (`S.notMember` links') <$> takeMVar fromWorkers
-        state'' <- if not (null newLinks)
-            then do
-                _ <- forkIO $ forM_ newLinks (putMVar toWorkers) 
-                let links'' = foldr S.insert links' newLinks
-                return $ state' & (links .~ links'') . (pending +~ length newLinks - 1)
-            else do
-                return $ state' & (pending -~ 1)
+        state'' <-
+            if not (null newLinks)
+                then do
+                    _ <- forkIO $ forM_ newLinks (putMVar toWorkers) 
+                    let links'' = foldr S.insert links' newLinks
+                    return $ state' & (links .~ links'') . (pending +~ length newLinks - 1)
+                else do
+                    return $ state' & (pending -~ 1)
         writeIORef (env ^. state) state''
         return (state'' ^. pending)
     when (cnt > 0) $ loop toWorkers fromWorkers
