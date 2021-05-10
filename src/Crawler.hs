@@ -4,9 +4,9 @@ module Crawler where
 
 import Control.Lens
 import qualified Data.Set as S
+import Control.Monad.Reader ( MonadReader(ask), MonadIO(liftIO) )
 
 import Control.Monad
-import Control.Monad.Reader ( MonadReader(ask), MonadIO(liftIO) )
 import Control.Concurrent ( forkIO, newEmptyMVar, putMVar, takeMVar, MVar )
 import Data.IORef ( readIORef, writeIORef )
 
@@ -47,6 +47,5 @@ loop toWorkers fromWorkers = do
             else do
                 return $ state' & (pending -~ 1)
         writeIORef (env ^. state) state''
-        -- print state''
         return (state'' ^. pending)
     when (cnt > 0) $ loop toWorkers fromWorkers

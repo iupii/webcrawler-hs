@@ -2,8 +2,8 @@ module App where
 
 import Control.Lens
 import qualified Data.Set as S
-
 import Control.Monad.Reader
+
 import Control.Exception ( throwIO )
 import Data.IORef ( newIORef, readIORef )
 import Data.Text ( Text )
@@ -15,9 +15,11 @@ import Utils ( parseURLBase )
 env :: Text -> Int -> (Text -> IO [Text]) -> IO Env
 env u l f =
     case parseURLBase u of
-        Nothing -> throwIO (BadUrlException u)
         Just (urlBase', links') -> do
-            s <- newIORef AppState { _links = S.fromList links', _pending = length links' }
+            s <- newIORef AppState
+                { _links = S.fromList links'
+                , _pending = length links'
+                }
             return Env
                 { _state = s
                 , _config = AppConfig
@@ -26,6 +28,7 @@ env u l f =
                     }
                 , _fetchLinks = f
                 }
+        Nothing -> throwIO (BadUrlException u)
 
 app :: App ()
 app = crawl >> out

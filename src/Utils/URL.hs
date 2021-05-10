@@ -15,6 +15,7 @@ import Control.Lens
 import Text.URI ( URI, RText, RTextLabel(..), mkURI, mkScheme, render )
 import qualified Text.URI as URI ( Authority(..) )
 import Text.URI.Lens
+
 import Control.Applicative ( (<|>) )
 import Data.List ( nub )
 import Data.Text ( Text )

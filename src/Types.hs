@@ -2,16 +2,16 @@
 
 module Types where
 
-import Control.Exception ( Exception )
+import Control.Lens ( makeLenses )
+import qualified Data.Set as S
 import Control.Monad.Reader ( ReaderT )
-import Control.Lens
 
+import Control.Exception ( Exception )
+import Data.Typeable ( Typeable )
 import Data.IORef ( IORef )
 import Data.Text ( Text )
-import Data.Typeable
-import qualified Data.Set as S
 
-import Utils
+import Utils ( URLBase, URL )
 
 data AppState = AppState
     { _links :: S.Set Text
@@ -32,7 +32,7 @@ data Env = Env
 
 type App = ReaderT Env IO
 
-data CrawlerException = BadUrlException Text
+data CrawlerException = BadUrlException URL
     deriving (Typeable, Show)
 
 instance Exception CrawlerException
