@@ -7,7 +7,8 @@ import Data.Text ( Text )
 
 import Control.Monad.Reader ( runReaderT )
 
-import Crawler
+import App
+import Utils
 
 data Opts = Opts
     { url :: Text
@@ -28,7 +29,7 @@ args = Opts
         <> metavar "INT" )
 
 main :: IO ()
-main = execParser opts >>= opts2env >>= runReaderT crawl
+main = execParser opts >>= opts2env >>= runReaderT app
     where
         opts = info (args <**> helper)
              ( fullDesc

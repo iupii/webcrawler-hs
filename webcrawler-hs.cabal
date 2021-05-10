@@ -31,10 +31,11 @@ common shared-properties
 library
   import: shared-properties
   exposed-modules:
+      App
+      Types
       Crawler
       Utils
-      Utils.URI
-      Utils.Scalpel
+      Utils.URL
   other-modules:
       Paths_webcrawler_hs
   hs-source-dirs:

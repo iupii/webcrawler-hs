@@ -1,51 +1,52 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Crawler
-    ( env
-    , crawl
-    , scrapeFetchLinks
-    )
-where
+module Crawler where
 
-import Control.Monad.Reader ( ReaderT )
-import Data.IORef
-import Data.Maybe ( fromJust )
-import Data.Text ( Text )
+import Control.Lens
 import qualified Data.Set as S
 
-import Utils
+import Control.Monad
+import Control.Monad.Reader ( MonadReader(ask), MonadIO(liftIO) )
+import Control.Concurrent ( forkIO, newEmptyMVar, putMVar, takeMVar, MVar )
+import Data.IORef ( readIORef, writeIORef )
 
-data AppState = AppState
-    { links :: S.Set Text
-    , pending :: Int
-    }
+import Types
+import Utils ( URL, parseInternalURLs )
 
-data AppConfig = AppConfig
-    { uriBase :: URIBase
-    , workers :: Int
-    }
-
-data Env = Env
-    { state :: IORef AppState
-    , config :: AppConfig
-    , fetchLinks :: String -> IO [Text]
-    }
-
-type App = ReaderT Env IO
-
-env :: Text -> Int -> (String -> IO [Text]) -> IO Env
-env u l f = do
-    s <- newIORef AppState { links = S.singleton u, pending = 1 }
-    return Env
-        { state = s
-        , config = AppConfig
-            { uriBase = fromJust $ mkURIBase u
-            , workers = l
-            }
-        , fetchLinks = f
-        }
 
 crawl :: App ()
-crawl = undefined
+crawl = do
+    env <- ask
+    toWorkers <- liftIO newEmptyMVar
+    fromWorkers <- liftIO newEmptyMVar
 
+    liftIO $ replicateM_ (env ^. config . workers) $ forkIO $ forever $ do
+        takeMVar toWorkers >>= getLinks env >>= putMVar fromWorkers
 
+    liftIO $ do
+        state' <- readIORef (env ^. state)
+        forM_ (state' ^. links) (putMVar toWorkers)
+
+    loop toWorkers fromWorkers
+
+    where
+        getLinks e u = parseInternalURLs (e ^. config . urlBase) <$> (e ^. fetchLinks) u
+
+loop :: MVar URL -> MVar [URL] -> App ()
+loop toWorkers fromWorkers = do
+    env <- ask
+    cnt <- liftIO $ do
+        state' <- readIORef (env ^. state)
+        let links' = state' ^. links
+        newLinks <- filter (`S.notMember` links') <$> takeMVar fromWorkers
+        state'' <- if not (null newLinks)
+            then do
+                _ <- forkIO $ forM_ newLinks (putMVar toWorkers) 
+                let links'' = foldr S.insert links' newLinks
+                return $ state' & (links .~ links'') . (pending +~ length newLinks - 1)
+            else do
+                return $ state' & (pending -~ 1)
+        writeIORef (env ^. state) state''
+        -- print state''
+        return (state'' ^. pending)
+    when (cnt > 0) $ loop toWorkers fromWorkers
